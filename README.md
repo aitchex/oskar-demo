@@ -5,7 +5,7 @@ Website: [oskarfishing.com](https://oskarfishing.com/)
 ## Important Files
 
 ```py
-.                      # Project directory
+.
 ├─ account/
 │  ├─ forms.py         # User creation and update forms
 │  ├─ models.py        # User and Address models
