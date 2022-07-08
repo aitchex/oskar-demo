@@ -1,0 +1,422 @@
+{% extends 'base.html' %}
+
+{% load humanize %}
+
+{% load static %}
+
+
+{% block og_title %}{{ product.name }}{% endblock og_title %}
+
+
+{% block description %}{% spaceless %}
+{% with sd=product.short_description %}
+{% if sd and sd is '' %}{{ sd }}{% else %}{{ block.super }}{% endif %}
+{% endwith %}
+{% endspaceless %}{% endblock %}
+
+{% block og_description %}{% spaceless %}
+{% with sd=product.short_description %}
+{% if sd %}{{ sd }}{% else %}{{ block.super }}{% endif %}
+{% endwith %}
+{% endspaceless %}{% endblock %}
+
+{% block og_image %}{% spaceless %}
+{% with thumbnail=product.thumbnail %}
+{% if thumbnail %}{{ thumbnail.url }}{% else %}{{ block.super }}{% endif %}
+{% endwith %}
+{% endspaceless %}{% endblock %}
+
+{% block og_type %}product{% endblock og_type %}
+{% block title %}{{ product.name }} | {{ block.super }}{% endblock title %}
+
+{% block meta %}
+<meta name="product_name" content="{{ product.name }}">
+
+{% if variation.price and variation.price != "" %}
+
+{% if variation.is_sale %}
+<meta name="product_price" content="{{ variation.sale_price }}">
+<meta name="product_old_price" content="{{ variation.price }}">
+{% else %}
+<meta name="product_price" content="{{ variation.price }}">
+{% endif %}
+
+<meta name="availability" content="instock">
+
+{% else %}
+
+
+{% if False %}
+<meta name="product_price" content="{{ variation.price }}">
+{% endif %}
+
+<meta name="product_price" content="0">
+
+<meta name="availability" content="outofstock">
+
+{% endif %}
+
+{% endblock meta %}
+
+{% block content %}
+{% with is_user_wholesaler=is_wholesaler %}
+
+<section class="grid gap-4
+  lg:gap-8">
+
+  <section class="gray-box grid gap-2 p-2
+    md:grid-cols-2 md:px-4 md:py-3 md:items-center md:justify-between">
+
+    {% block breadcrumbs %} {% include 'components/breadcrumbs.html' %} {% endblock breadcrumbs %}
+
+    <div class="grid grid-flow-col gap-2 justify-center text-xs
+      sm:text-sm md:justify-end lg:text-base lg:gap-3">
+
+      {% if variations|length > 0 %}
+      {% if product.description and product.description != "" %}
+      <a class="px-2 py-1.5 lg:px-3 rounded-full border border-gray-300
+        hover:border-blue-500 hover:text-blue-500 hover:bg-blue-100" href="#description">
+        معرفی محصول
+      </a>
+      {% endif %}
+
+      <a class="px-2 py-1.5 lg:px-3 rounded-full border border-gray-300
+        hover:border-blue-500 hover:text-blue-500 hover:bg-blue-100" href="#info">
+        مشخصات
+      </a>
+      {% endif %}
+
+      <!-- <a class="px-2 py-1.5 lg:px-3 rounded-full border border-gray-300
+        hover:border-blue-500 hover:text-blue-500 hover:bg-blue-100" href="#">
+        نظرات
+      </a> -->
+    </div>
+  </section>
+
+  <section class="gray-box grid gap-2 p-2
+    md:grid-cols-[min-content,1fr] md:gap-x-4 md:p-4
+    lg:gap-x-8">
+
+    <div class="flex justify-between font-iransansdn text-gray-500 text-sm">
+      <p class="text-blue-500">
+        آخرین به‌روزرسانی قیمت:
+        {{ shamsi }}
+      </p>
+
+      <!-- <p>
+        تعداد نظرات
+      </p> -->
+    </div>
+
+    <h1 class="text-lg font-bold text-justify">{{ product.name }}</h1>
+
+    <div class="grid grid-cols-5 gap-4 content-start
+      md:row-start-1 md:row-span-4 md:w-72
+      lg:row-start-1 lg:row-span-5 lg:w-96">
+      <div id="magnify" class="w-48 h-48 hidden absolute z-[100] border border-gray-600 rounded-md
+        opacity-0 transition-opacity duration-75 ease-linear pointer-events-none bg-white
+        bg-no-repeat shadow-[inset_0_0_20px_rgba(0,0,0,.2)]
+        md:block lg:w-64 lg:h-64"></div>
+      <div class="col-span-full relative w-full pt-[100%] bg-white rounded-lg overflow-hidden">
+        {% if images.0.thumbnail and images.0.thumbnail_webp %}
+        <picture id="slider-picture" class="md:cursor-none">
+          <source id="slider-image-webp" type="image/webp" srcset="{{ images.0.thumbnail_webp.url }}">
+          <img id="slider-image" class="w-full absolute top-0 left-0"
+            src="{{ images.0.thumbnail.url }}" alt="{{ images.0.alt }}">
+        </picture>
+        {% else %}
+        <div class="absolute top-[calc(50%-0.64rem)] left-0 text-center w-full">
+          <p class="text-xl">
+            بدون عکس
+          </p>
+        </div>
+        {% endif %}
+      </div>
+
+      {% if images|length > 5 %}
+      <button class="bg-white rounded-lg transition-colors ease-linear hover:text-blue-500" onclick="slideRight()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-6 w-6"
+          fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+
+      <div id="image-slideshow" class="col-span-3 grid grid-flow-col gap-4 rounded-lg
+        overflow-x-auto webkit-scroller-hidden moz-scroller-hidden"
+        style="grid-template-columns: repeat({{ images|length }}, calc(100% / 3 - 0.666666rem));">
+        {% endif %}
+
+        {% for image in images %}
+        {% if image.image and image.image_webp and image.thumbnail and image.thumbnail_webp %}
+        <div
+          class="border-2 border-transparent slider-thumbnail-container relative w-full pt-[calc(100%-4px)]
+          bg-white rounded-lg overflow-hidden cursor-pointer{% if forloop.counter == 1 %} selected-thumbnail{% endif %}"
+          data-image-id="{{ image.id }}" data-variation-id="{{ image.variation.id }}"
+          data-image-src="{{ image.image.url }}">
+          <picture>
+            <source type="image/webp" srcset="{{ image.thumbnail_webp.url }}">
+            <img class="slider-thumbnail absolute top-0 left-0"
+              src="{{ image.thumbnail.url }}" alt="{{ image.alt }}"
+              data-image-src="{{ image.image.url }}" data-image-webp-src="{{ image.image_webp.url }}"
+              data-thumbnail-webp-src="{{ image.thumbnail_webp.url }}"
+              loading="{% if forloop.counter > 5 %}lazy{% else %}eager{% endif %}">
+          </picture>
+        </div>
+        {% endif %}
+        {% endfor %}
+
+        {% if images|length > 5 %}
+      </div>
+      <button class="bg-white rounded-lg transition-colors ease-linear hover:text-blue-500" onclick="slideLeft()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-6 w-6" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+      {% endif %}
+
+    </div>
+
+    <p class="text-justify leading-loose text-gray-600">{{ product.short_description }}</p>
+
+    <div class="grid gap-4 items-end text-lg font-bold font-iransansdn
+      md:row-start-5 md:col-span-full md:grid-cols-[1fr,min-content,1fr] md:mt-4
+      lg:col-span-1 lg:mt-0">
+
+      <form id="variation-form">
+        <div class="grid gap-4 items-end">
+
+          {% if sizes|length > 0 %}
+          <div class="flex">
+            <label for="select-size" class="self-center w-[3.25rem]">
+              سایز:
+            </label>
+            <select name="size" id="select-size"
+              class="flex-1 h-12 bg-white rounded-lg px-2 border border-gray-300 text-base
+                outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition ease-linear">
+              {% for size in sizes %}
+              {% if size.id == variation.size.id %}
+              <option value="{{ size.id }}" selected>{{ size.name }}</option>
+              {% elif not variation.size and variations.0.size and size.id == variations.0.size.id %}
+              <option value="{{ size.id }}" selected>{{ size.name }}</option>
+              {% else %}
+              <option value="{{ size.id }}">{{ size.name }}</option>
+              {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+          {% endif %}
+
+          <div id="color-section" class="flex hidden">
+            <label class="w-[3.25rem] self-center">
+              رنگ:
+            </label>
+
+            <div class="product-color-container -m-1 md:-m-2 flex-1 flex flex-wrap">
+              {% for item in variations %}
+              {% if item.size == variation.size %}
+              <input type="radio" id="select-color-{{ item.id }}" name="color"
+                value="{{ item.id }}" class="product-color-radio w-0 h-0 opacity-0 absolute">
+              <label class="block min-w-max w-[calc(33.3333%-0.5rem)] h-12 p-2 m-1 rounded-lg bg-white
+                product-color-radio-label cursor-pointer
+                md:w-[calc(33.3333%-1rem)] md:m-2
+                2xl:w-[calc(25%-1rem)]" for="select-color-{{ item.id }}">
+                <p class="color-text px-2 flex-1 text-center text-sm">
+                  {% for color in item.colors %}
+                  {% if forloop.counter == 1 %}
+                  {{ color.name }}
+                  {% else %}
+                  - {{ color.name }}
+                  {% endif %}
+                  {% endfor %}
+                </p>
+                <div class="color-bar w-full h-2 mt-1 rounded-full border border-gray-300"
+                  style="background: linear-gradient(to left, {{ item.colors.0.color }},
+                    {% if item.colors.1 %}{{ item.colors.1.color }}{% else %}{{ item.colors.0.color }}
+                    {% endif %}{% if item.colors.2 %}, {{ item.colors.2.color }}{% endif %});"></div>
+              </label>
+              {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+
+        </div>
+      </form>
+
+      <div class="hidden md:block h-full w-[1px] bg-gray-300"></div>
+
+      <div class="grid gap-3 items-end">
+        <div class="flex items-end w-full justify-between">
+          <div {% if not variation.is_sale %}class="hidden" {% endif %}>
+            {% if not is_user_wholesaler %}
+            <p id="sale-counter" class="product-counter text-gray-500 font-normal"
+              data-seconds="{{ product.get_lowest_price_variation.sale_remaining }}">
+              00:00:00
+            </p>
+
+            <p id="sale-percent" class="sale-percent text-blue-500 text-xl"
+              data-price="{{ variation.price }}" data-sale-price="{{ variation.sale_price }}">
+              00%
+            </p>
+            {% else %}
+            <p id="sale-counter" class="product-counter text-gray-500 font-normal" data-seconds="0"></p>
+            <p id="sale-percent" class="sale-percent text-blue-500 text-xl hidden"
+              data-price="0" data-sale-price="0"></p>
+            {% endif %}
+          </div>
+          <div class="mr-auto">
+            <p id="old-price" class="line-through text-gray-500 text-left text-base font-normal
+              {% if not variation.is_sale %}hidden{% endif %}">
+              {% if not is_user_wholesaler %}{{ variation.price|intcomma }}{% endif %}
+            </p>
+            <p id="price" class="text-blue-500 text-left text-xl">
+              {% if not is_user_wholesaler and variation.price and variation.price != "" %}
+
+              <span>
+                {% if variation.is_sale %}
+                {{ variation.sale_price|intcomma }}
+                {% else %}
+                {{ variation.price|intcomma }}
+                {% endif %}
+              </span>
+              <span class="text-sm"> تومان</span>
+
+              {% elif is_user_wholesaler and variation.wholesale_price %}
+
+              <span>
+                {{ variation.wholesale_price|intcomma }}
+              </span>
+              <span class="text-sm"> تومان</span>
+
+              {% else %}
+
+              ناموجود
+
+              {% endif %}
+            </p>
+          </div>
+        </div>
+        <button id="add-to-cart" class="blue-button" style="{% if not variation.price or variation.price == '' %}
+          background-color: #D1D5DB; pointer-events: none;{% endif %}" type="button"
+          data-next="{% if variation.price %}{% url 'add_to_cart' variation.id %}{% endif %}"
+          onclick="if (this.dataset.next.trim() != '') { history.pushState('{{ product.name }}', '');
+            window.location.replace(this.dataset.next); }">
+          افزودن به سبد خرید
+        </button>
+
+      </div>
+    </div>
+  </section>
+
+  {% if product.description and product.description != "" %}
+  <section class="gray-box p-2 text-justify leading-loose
+    md:px-4 md:py-3">
+    <a id="description" class="relative -top-24"></a>
+
+    <div class="flex items-center">
+      <hr class="w-full border-gray-300">
+      <h3 class="inline-block mx-2 whitespace-nowrap text-xl font-iransansdn font-bold">
+        معرفی محصول
+      </h3>
+      <hr class="w-full border-gray-300">
+    </div>
+
+    <article class="mt-2">
+      <p>{{ product.description|linebreaksbr }}</p>
+    </article>
+  </section>
+  {% endif %}
+
+  {% if variations|length > 0 %}
+  <section class="gray-box p-2
+    md:px-4 md:py-3">
+    <a id="info" class="relative -top-24"></a>
+
+    <div class="flex items-center">
+      <hr class="w-full border-gray-300">
+      <h3 class="inline-block mx-2 whitespace-nowrap text-xl font-iransansdn font-bold">
+        مشخصات
+      </h3>
+      <hr class="w-full border-gray-300">
+    </div>
+
+    <div id="info-box" class="mt-2 leading-loose">
+      {% for item in info %}
+      <div class="info-row grid grid-cols-[34vw,1fr] md:grid-cols-[12.5rem,1fr] rounded-lg">
+        <div class="info-key p-4 font-iransansdn font-bold">{{ item.name }}</div>
+        <div class="info-value p-4">{{ item.value }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  {% if suggestions|slice:":5"|length == 5 %}
+  <div class="flex items-center">
+    <hr class="w-full border-gray-300">
+    <div class="flex mx-4">
+      <h3 class="font-iransansdn font-bold text-xl whitespace-nowrap">
+        محصولات مشابه
+      </h3>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-4 animate-arrow md:hidden" viewBox="0 0 20 20"
+        fill="currentColor">
+        <path fill-rule="evenodd" d="M7.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0
+          011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l2.293 2.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+      </svg>
+    </div>
+    <hr class="w-full border-gray-300">
+  </div>
+
+  <section class="shadow-margin overflow-x-auto md:overflow-hidden">
+    <div class="shadow-padding grid grid-cols-[repeat(5,60vw)] grid-rows-1 auto-rows-[0] gap-4
+      overflow-y-hidden webkit-scroller-hidden moz-scroller-hidden
+      sm:grid-cols-3
+      md:grid-cols-4 md:gap-y-8
+      lg:grid-cols-5">
+      {% for product in suggestions|slice:":5" %}
+      {% include 'components/product-card.html' with product=product %}
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+</section>
+
+<section id="resources" class="hidden">
+  <input type="radio" id="select-color" name="color" value=""
+    class="product-color-radio w-0 h-0 opacity-0 absolute">
+  <label class="block min-w-max w-[calc(33.3333%-0.5rem)] h-12 p-2 m-1 rounded-lg bg-white
+    product-color-radio-label cursor-pointer
+    md:w-[calc(33.3333%-1rem)] md:m-2
+    2xl:w-[calc(25%-1rem)]" for="select-color">
+    <p class="color-text px-2 flex-1 text-center text-sm"></p>
+    <div class="color-bar w-full h-2 mt-1 rounded-full border border-gray-300"></div>
+  </label>
+
+  <div class="info-row grid grid-cols-[34vw,1fr] md:grid-cols-[12rem,1fr] rounded-lg">
+    <div class="info-key p-4 font-iransansdn font-bold"></div>
+    <div class="info-value p-4"></div>
+  </div>
+</section>
+
+{% endwith %}
+{% endblock %}
+
+
+{% block scripts %}
+
+<script id="page-url" type="application/json">"{{ page_url }}"</script>
+
+<script id="add-to-cart-prefix" type="application/json">"{% url 'add_to_cart' %}"</script>
+
+<script id="first-variation" type="application/json">"{{ variation.id }}"</script>
+<script id="first-variation-size" type="application/json">
+  "{% if variation.size %}{{ variation.size.id }}{% elif variations.0.size %}{{ variations.0.size.id}}{% endif %}"
+</script>
+
+{{ variations_json|json_script:"variations-data" }}
+{{ info_json|json_script:"info-data" }}
+{{ colors_json|json_script:"colors-data" }}
+
+<script src="{% static 'js/product.js' %}"></script>
+{% endblock scripts %}

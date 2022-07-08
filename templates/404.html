@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block robots %}
+<meta name="robots" content="noindex">
+{% endblock robots %}
+
+{% block title %}404 | {{ block.super }}{% endblock title %}
+{% block og_title %}404{% endblock og_title %}
+
+{% block navbar %}{% endblock navbar %}
+
+{% block content %}
+
+<div class="flex w-full h-screen items-center justify-center">
+  <div class="gray-box p-4 flex flex-col items-center justify-center font-iransansdn
+    w-full h-[21.625rem] min-w-[20rem] sm:w-[26.25rem]">
+    <pre class="text-2xl">.:.: 404 :.:.</pre>
+    <p class="text-lg">
+      صفحه پیدا نشد!
+    </p>
+    <a href="{% url 'home' %}" class="mt-2 px-3 py-1.5 rounded-full text-sm 
+      border border-blue-500 text-blue-500 hover:text-blue-500 hover:bg-blue-100">
+      صفحه اصلی
+    </a>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block footer %}{% endblock footer %}

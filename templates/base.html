@@ -1,0 +1,83 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="fa-IR" style="scroll-behavior: smooth;">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta name="theme-color" content="#3B82F6">
+  <meta name="apple-mobile-web-app-status-bar-style" content="#3B82F6">
+
+  {% block robots %}
+  <meta name="robots" content="index,follow">
+  {% endblock robots %}
+
+  <meta name="description" content="{% block description %}{{ about_us }}{% endblock description %}" />
+
+  <meta property="og:url" content="{{ request.build_absolute_uri }}">
+  <meta property="og:type" content="{% block og_type %}website{% endblock og_type %}">
+  <meta property="og:site_name" content="فروشگاه اسکار فیشینگ">
+  <meta property="og:title" content="{% block og_title %}وبسایت{% endblock og_title %}">
+  <meta property="og:description" content="{% block og_description %}{{ about_us }}{% endblock og_description %}">
+  <meta property="og:locale" content="fa-IR">
+  <meta property="og:image"
+    content="https://oskarfishing.com{% block og_image %}{% static 'img/logo.jpg' %}{% endblock og_image %}">
+  <meta property="og:image:width" content="500">
+  <meta property="og:image:height" content="500">
+
+  {% block meta %}{% endblock meta %}
+
+  <title>{% block title %}فروشگاه اسکار فیشینگ{% endblock title %}</title>
+
+  <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'img/apple-touch-icon.png' %}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/favicon-32x32.png' %}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{% static 'img/favicon-16x16.png' %}">
+
+  <link rel="canonical" href="https://oskarfishing.com{{ request.path }}">
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CKFEZW8G3Z"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'G-CKFEZW8G3Z');
+  </script>
+
+  <style>
+    #zarinpal a,
+    #zarinpal img {
+      width: 100%;
+      height: 100%;
+    }
+
+    #zarinpal img {
+      content: url("{% static 'img/zarinpal.svg' %}");
+    }
+
+  </style>
+</head>
+
+<body class="min-w-[320px] min-h-screen flex flex-col font-vazir bg-gray-200 text-gray-700" dir="rtl">
+
+  {% block navbar %} {% include 'components/navbar.html' %} {% endblock navbar %}
+
+  <div class="grow flex flex-col mx-2 xs:mx-4 md:mx-8 lg:mx-16 2xl:mx-auto 2xl:w-[1408px]">
+    {% block content %}{% endblock content %}
+  </div>
+
+  {% block footer %} {% include 'components/footer.html' %} {% endblock footer %}
+
+  <!-- Static Scripts -->
+  <script src="{% static 'js/main.js' %}"></script>
+  {% block scripts %}{% endblock scripts %}
+
+</body>
+
+</html>

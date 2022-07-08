@@ -1,0 +1,334 @@
+{% extends 'base.html' %}
+
+{% load humanize %}
+
+{% load static %}
+
+
+{% block og_title %}{% if title %}{{ title }}{% else %}محصولات{% endif %}{% endblock og_title %}
+
+
+{% block title %}{% if title %}{{ title }}{% else %}محصولات{% endif %} | {{ block.super }}{% endblock title %}
+
+
+{% block content %}
+{% with is_user_wholesaler=is_wholesaler %}
+
+<div class="grid items-start gap-4
+  md:grid-cols-[min-content,1fr] md:justify-center
+  lg:gap-8">
+
+  {% block breadcrumbs %} {% include 'components/breadcrumbs.html' %} {% endblock breadcrumbs %}
+
+  <div id="filters" class="hidden fixed top-0 left-0 z-[9999] 
+    md:static md:block md:w-72 md:z-0">
+    <div id="filters-box" class="w-screen h-screen relative p-8 overflow-y-auto bg-gray-100
+      md:gray-box md:h-auto md:w-72 md:p-2 md:z-0">
+
+      <button class="absolute top-2 left-2 p-0.5 md:hidden" onclick="toggleFilters()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <form id="filter-form" class="grid gap-3">
+        <div class="flex items-center">
+          <hr class="w-full border-gray-300">
+          <h3 class="inline-block mx-2 whitespace-nowrap">
+            دسته‌بندی ها
+          </h3>
+          <hr class="w-full border-gray-300">
+        </div>
+
+        <div class="px-2 py-1 rounded-md bg-white">
+          {% if current.sub_category and current.sub_category.sub_categories|length > 0 %}
+
+          <h3>
+            <a href="{% url 'products' current.category.slug current.sub_category.slug %}">
+              {{ current.sub_category.name }}
+            </a>
+          </h3>
+          {% for category in current.sub_category.sub_categories %}
+          <div class="flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="text-blue-500 h-5 w-5 -mr-1.5" viewBox="0 0 20 20"
+              fill="currentColor">
+              <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0
+                01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+            </svg>
+            <h3 class="mt-1 text-sm">
+              <a class="{% if current.sub_sub_category and current.sub_sub_category == category %}font-bold{% endif %}"
+                href="{% url 'products' current.category.slug current.sub_category.slug category.slug %}">
+                {{ category.name }}
+              </a>
+            </h3>
+          </div>
+          {% endfor %}
+
+
+          {% elif current.category and current.category.sub_categories|length > 0 %}
+
+          <h3>
+            <a href="{% url 'products' current.category.slug %}">
+              {{ current.category.name }}
+            </a>
+          </h3>
+          {% for category in current.category.sub_categories %}
+          <div class="flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="text-blue-500 h-5 w-5 -mr-1.5" viewBox="0 0 20 20"
+              fill="currentColor">
+              <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0
+                01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+            </svg>
+            <h3 class="mt-1 text-sm">
+              <a class="{% if current.sub_category and current.sub_category == category %}font-bold{% endif %}"
+                href="{% url 'products' current.category.slug category.slug %}">
+                {{ category.name }}
+              </a>
+            </h3>
+          </div>
+          {% endfor %}
+
+          {% else %}
+
+          <h3>
+            <a href="{% url 'products' %}">
+              محصولات
+            </a>
+          </h3>
+          {% for category in categories %}
+          <div class="flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="text-blue-500 h-5 w-5 -mr-1.5" viewBox="0 0 20 20"
+              fill="currentColor">
+              <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0
+                01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+            </svg>
+            <h3 class="mt-1 text-sm">
+              <a class="{% if current.category and current.category == category %}font-bold{% endif %}"
+                href="{% url 'products' category.slug %}">
+                {{ category.name }}
+              </a>
+            </h3>
+          </div>
+          {% endfor %}
+          {% endif %}
+        </div>
+
+        <div class="flex items-center">
+          <hr class="w-full border-gray-300">
+          <h3 class="inline-block mx-2 whitespace-nowrap">محدوده قیمت</h3>
+          <hr class="w-full border-gray-300">
+        </div>
+
+        <div dir="ltr">
+          <input id="min-price" name="{{ url_parameters.min_price }}" type="hidden" data-min="{{ min_slider }}"
+            value="{% if current.url_parameters.min_price %}{{current.url_parameters.min_price}}
+              {% else %}{{ min_slider }}{% endif %}">
+          <input id="max-price" name="{{ url_parameters.max_price }}" type="hidden" data-max="{{ max_slider }}"
+            value="{% if current.url_parameters.max_price %}{{current.url_parameters.max_price}}
+              {% else %}{{ max_slider }}{% endif %}">
+
+          <div class="relative">
+            <div id="track" class="h-1.5 rounded-full bg-blue-500"></div>
+            <input
+              class="absolute m-auto inset-0 w-full appearance-none outline-none bg-transparent pointer-events-none"
+              id="min-slider" type="range" min="{{ min_slider }}" max="{{ max_slider }}" step="1000"
+              oninput="onMinSlide()"
+              value="{% if current.url_parameters.min_price %}{{current.url_parameters.min_price}}{% else %}{{ min_slider }}{% endif %}">
+            <input
+              class="absolute m-auto inset-0 w-full appearance-none outline-none bg-transparent pointer-events-none"
+              id="max-slider" type="range" min="{{ min_slider }}" max="{{ max_slider }}" step="1000"
+              oninput="onMaxSlide()"
+              value="{% if current.url_parameters.max_price %}{{current.url_parameters.max_price}}{% else %}{{ max_slider }}{% endif %}">
+          </div>
+          <div class="mt-4 grid grid-cols-[1fr,min-content,1fr] items-center gap-3 font-iransansdn text-sm">
+            <input id="min-input" class="primary-input py-2 bg-white text-center" type="text" inputmode="numeric"
+              oninput="onMinInput()" onblur="onMinBlur()">
+            <hr class="w-3 border-gray-300">
+            <input id="max-input" class="primary-input py-2 bg-white text-center" type="text" inputmode="numeric"
+              oninput="onMaxInput()" onblur="onMaxBlur()">
+          </div>
+        </div>
+
+        {% if brands|length_is:"0" == False %}
+        <div class="flex items-center">
+          <hr class="w-full border-gray-300">
+          <h3 class="inline-block mx-2 whitespace-nowrap">
+            برند محصولات
+          </h3>
+          <hr class="w-full border-gray-300">
+        </div>
+        <div class="rounded-md overflow-hidden bg-white">
+          <div class="max-h-[7.75rem] px-2 py-1 grid gap-1 overflow-y-auto webkit-scroller moz-scroller">
+
+            {% for item in brands %}
+            {% if item.id|stringformat:"i" in current.url_parameters.brands %}
+            <div class="flex items-center whitespace-nowrap">
+              <input id="brand-{{ item.id }}" name="{{ url_parameters.brands }}" value="{{ item.id }}" type="checkbox"
+                checked>
+              <label for="brand-{{ item.id }}" class="mr-2 text-sm">{{ item.name }}</label>
+              {% if item.english_name %}
+              <label for="brand-{{ item.id }}" class="mr-auto text-left text-xs text-gray-400">
+                {{ item.english_name }}
+              </label>
+              {% endif %}
+            </div>
+            {% endif %}
+            {% endfor %}
+
+            {% for item in brands %}
+            {% if not item.id|stringformat:"i" in current.url_parameters.brands %}
+            <div class="flex items-center whitespace-nowrap">
+              <input id="brand-{{ item.id }}" name="{{ url_parameters.brands }}" value="{{ item.id }}" type="checkbox">
+              <label for="brand-{{ item.id }}" class="mr-2 text-sm cursor-pointer">{{ item.name }}</label>
+              {% if item.english_name %}
+              <label for="brand-{{ item.id }}" class="mr-auto text-left text-xs text-gray-400 cursor-pointer">
+                {{ item.english_name }}
+              </label>
+              {% endif %}
+            </div>
+            {% endif %}
+            {% endfor %}
+
+          </div>
+        </div>
+        {% endif %}
+
+        {% if colors|length_is:"0" == False %}
+        <div class="flex items-center">
+          <hr class="w-full border-gray-300">
+          <h3 class="inline-block mx-2 whitespace-nowrap">
+            رنگ ها
+          </h3>
+          <hr class="w-full border-gray-300">
+        </div>
+        <div class="rounded-md overflow-hidden bg-white">
+          <div class="max-h-[7.75rem] px-2 py-1 grid gap-1 overflow-y-auto webkit-scroller moz-scroller">
+
+            {% for item in colors %}
+            {% if item.id|stringformat:"i" in current.url_parameters.colors %}
+            <div class="flex items-center whitespace-nowrap">
+              <input id="color-{{ item.id }}" name="{{ url_parameters.colors }}" value="{{ item.id }}" type="checkbox"
+                checked>
+              <label for="color-{{ item.id }}" class="mr-2 text-sm cursor-pointer">{{ item.name }}</label>
+              <!-- <label for="color-{{ item.id }}" class="mr-auto text-left text-xs text-gray-400">
+                {{ item.color }}
+              </label> -->
+            </div>
+            {% endif %}
+            {% endfor %}
+
+            {% for item in colors %}
+            {% if not item.id|stringformat:"i" in current.url_parameters.colors %}
+            <div class="flex items-center whitespace-nowrap">
+              <input id="color-{{ item.id }}" name="{{ url_parameters.colors }}" value="{{ item.id }}" type="checkbox">
+              <label for="color-{{ item.id }}" class="mr-2 text-sm cursor-pointer">{{ item.name }}</label>
+              <!-- <label for="color-{{ item.id }}" class="mr-auto text-left text-xs text-gray-400">
+                {{ item.color }}
+              </label> -->
+            </div>
+            {% endif %}
+            {% endfor %}
+
+          </div>
+        </div>
+        {% endif %}
+
+        {% if sizes|length_is:"0" == False %}
+        <div class="flex items-center">
+          <hr class="w-full border-gray-300">
+          <h3 class="inline-block mx-2 whitespace-nowrap">
+            سایز ها
+          </h3>
+          <hr class="w-full border-gray-300">
+        </div>
+        <div class="rounded-md overflow-hidden bg-white">
+          <div class="max-h-[7.75rem] px-2 py-1 grid gap-1 overflow-y-auto webkit-scroller moz-scroller">
+
+            {% for item in sizes %}
+            {% if item.id|stringformat:"i" in current.url_parameters.sizes %}
+            <div class="flex items-center font-iransansdn whitespace-nowrap">
+              <input id="sizes-{{ item.id }}" name="{{ url_parameters.sizes }}" value="{{ item.id }}" type="checkbox"
+                checked>
+              <label for="sizes-{{ item.id }}" class="mr-2 text-sm cursor-pointer">{{ item.name }}</label>
+            </div>
+            {% endif %}
+            {% endfor %}
+
+            {% for item in sizes %}
+            {% if not item.id|stringformat:"i" in current.url_parameters.sizes %}
+            <div class="flex items-center font-iransansdn whitespace-nowrap">
+              <input id="sizes-{{ item.id }}" name="{{ url_parameters.sizes }}" value="{{ item.id }}" type="checkbox">
+              <label for="sizes-{{ item.id }}" class="mr-2 text-sm cursor-pointer">{{ item.name }}</label>
+            </div>
+            {% endif %}
+            {% endfor %}
+
+          </div>
+        </div>
+        {% endif %}
+
+        <button id="submit-filter" class="blue-button mt-3 mb-[5.5rem] flex justify-center items-center
+          md:mb-auto" type="button">
+          <div id="white-spinner" class="opacity-0 transition-opacity ease-linear">
+            <svg class="animate-spin m-auto h-6 w-6 text-white"
+              xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0
+                014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" class="opacity-75" fill="currentColor">
+              </path>
+            </svg>
+          </div>
+          <span class="px-6 ml-6">اعمال فیلتر</span>
+        </button>
+
+      </form>
+    </div>
+  </div>
+
+  {% if products|length > 0 %}
+
+  <div class="grid grid-cols-2 gap-2 content-start
+    sm:grid-cols-3
+    md:grid-cols-2
+    lg:grid-cols-3 lg:gap-4
+    xl:grid-cols-4">
+
+    {% for product in products %}
+    {% if forloop.counter > 8 %}
+    {% include 'components/product-card.html' with product=product img_loading='lazy' %}
+    {% else %}
+    {% include 'components/product-card.html' with product=product img_loading='eager' %}
+    {% endif %}
+    {% endfor %}
+
+    {% include 'components/pagination.html' with page=products %}
+  </div>
+
+  {% else %}
+
+  <div class="gray-box flex flex-col min-h-[20rem] items-center justify-center w-full h-full">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 xs:h-20 xs:w-20 text-red-500"
+      fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.25"
+        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+
+    <p class="mt-2 text-lg xs:text-xl font-iransansdn font-bold">
+      محصولی یافت نشد!
+    </p>
+  </div>
+
+  {% endif %}
+
+</div>
+
+{% endwith %}
+{% endblock %}
+
+
+{% block scripts %}
+
+<script src="{% static 'js/shop.js' %}"></script>
+<script src="{% static 'js/slider.js' %}"></script>
+
+{% endblock scripts %}
